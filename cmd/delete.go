@@ -28,14 +28,13 @@ to quickly create a Cobra application.`,
 					fmt.Printf("Unable to find item with id: %d", id)
 				} else {
 					taskBook.Delete(id)
-					taskBook.Store("/home/araaha/taskbook.json")
 					fmt.Printf("Deleted item: %d", id)
 				}
 			}
 		}
 	},
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		ids := taskBook.AllID(false)
+		ids := taskBook.GetAllID(false)
 		return ids, cobra.ShellCompDirectiveNoFileComp
 	},
 }

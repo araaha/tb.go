@@ -21,11 +21,8 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: note,
-	PostRun: func(cmd *cobra.Command, args []string) {
-		taskBook.Store("/home/araaha/taskbook.json")
-	},
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return taskBook.AllBoard(), cobra.ShellCompDirectiveNoFileComp
+		return taskBook.GetAllBoard(), cobra.ShellCompDirectiveNoFileComp
 	},
 }
 
@@ -35,7 +32,7 @@ func note(cmd *cobra.Command, args []string) {
 	level := map[string]int{"low": 1, "medium": 2, "high": 3}
 
 	if len(args) == 0 {
-		fmt.Printf("No description was given as input")
+		fmt.Printf("No description was given as input\n")
 		os.Exit(1)
 	}
 

@@ -19,6 +19,9 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			taskBook.DisplayByBoard()
 		},
+		PersistentPostRun: func(cmd *cobra.Command, args []string) {
+			taskBook.Store("/home/araaha/taskbook.json")
+		},
 	}
 )
 
