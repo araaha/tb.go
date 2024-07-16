@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 	"time"
 )
@@ -81,7 +82,7 @@ func createTask(desc string, star bool, boards []string, comp bool, prog bool, p
 func (b *Book) AddTask(desc string, star bool, boards []string, comp bool, prog bool, prio int) {
 	task := createTask(desc, star, boards, comp, prog, prio)
 	b.add(task)
-	fmt.Printf("Created task: %v", task.ID)
+	fmt.Printf("Created task: %v\n", task.ID)
 }
 
 func createNote(desc string, star bool, boards []string, prio int) *Note {
@@ -143,7 +144,9 @@ func (b *Book) Delete(id int) error {
 		item.GetBaseItem().IsArchive = true
 		return item
 	}
-	b.update(id, modifyItem)
+	if err := b.update(id, modifyItem); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -167,7 +170,7 @@ func (b *Book) Store(fileName string) error {
 func (b *Book) Read(fileName string) error {
 	data, err := os.ReadFile(fileName)
 	if err != nil {
-		fmt.Errorf("%v", err)
+		panic(err)
 	}
 
 	if len(data) == 0 {
@@ -212,15 +215,6 @@ func (b *Book) Read(fileName string) error {
 
 }
 
-func (b *Book) Print() {
-	for _, item := range b.items {
-		fmt.Println(item.GetBaseItem().ID)
-		fmt.Println(item.GetBaseItem().Description)
-		fmt.Println(item.GetBaseItem().Date)
-		fmt.Println(item.GetBaseItem().Boards)
-	}
-}
-
 func (b *Book) getIndexByID(id int) int {
 	for i, item := range b.items {
 		if item.GetBaseItem().ID == id {
@@ -239,7 +233,7 @@ func (b *Book) getMaxID() int {
 	}
 }
 
-func (b *Book) AllID(at bool) []string {
+func (b *Book) GetAllID(at bool) []string {
 	var ids []string
 	for _, item := range b.items {
 		id := strconv.Itoa(item.GetBaseItem().ID)
@@ -252,7 +246,7 @@ func (b *Book) AllID(at bool) []string {
 	return ids
 }
 
-func (b *Book) AllBoard() []string {
+func (b *Book) GetAllBoard() []string {
 	var boards []string
 	for _, item := range b.items {
 		if item.GetBaseItem().Boards[0] != "My Board" {
@@ -270,4 +264,58 @@ func Create() {
 			panic(err)
 		}
 	}
+}
+
+// groupByBoard groups items by board
+func (b *Book) groupByBoard() (map[string][]Item, []string) {
+	itemsByBoard := make(map[string][]Item)
+	sortedBoard := make([]string, len(itemsByBoard))
+
+	for _, item := range b.items {
+		bi := item.GetBaseItem()
+		if !bi.IsArchive {
+			for _, board := range bi.Boards {
+				itemsByBoard[board] = append(itemsByBoard[board], item)
+			}
+		}
+	}
+
+	for id := range itemsByBoard {
+		sortedBoard = append(sortedBoard, id)
+	}
+
+	//sorts by first element in []int w.r.t date
+	sort.Slice(sortedBoard, func(i, j int) bool {
+		id1 := itemsByBoard[sortedBoard[i]][0]
+		id2 := itemsByBoard[sortedBoard[j]][0]
+		return id1.GetBaseItem().ID < id2.GetBaseItem().ID
+	})
+
+	return itemsByBoard, sortedBoard
+}
+
+// groupByDate groups items by date
+func (b *Book) groupByDate(a bool) (map[string][]Item, []string) {
+	itemsByDate := make(map[string][]Item)
+	sortedDates := make([]string, len(itemsByDate))
+
+	for _, item := range b.items {
+		bi := item.GetBaseItem()
+		if a || !bi.IsArchive {
+			itemsByDate[bi.Date] = append(itemsByDate[bi.Date], item)
+		}
+	}
+
+	for id := range itemsByDate {
+		sortedDates = append(sortedDates, id)
+	}
+
+	//sorts by first element in []int w.r.t date
+	sort.Slice(sortedDates, func(i, j int) bool {
+		id1 := itemsByDate[sortedDates[i]][0]
+		id2 := itemsByDate[sortedDates[j]][0]
+		return id1.GetBaseItem().ID < id2.GetBaseItem().ID
+	})
+
+	return itemsByDate, sortedDates
 }
