@@ -24,8 +24,17 @@ var (
 	ErrMissingDesc        = "No description was provided"
 	ErrMissingID          = "No id was provided"
 	ErrInvalidID          = "Unable to find item with id:"
-	ErrInvalidIDArgNumber = "More than one ids were provided"
+	ErrInvalidIDArgNumber = "More than one id was given as input"
 	ErrInvalidPriority    = "Priority can only be 1, 2 or 3"
+)
+
+var (
+	StarIcon     = Yellow("󰓎")
+	ProgressIcon = Blue("")
+	CompleteIcon = Green("")
+	PendingIcon  = Magenta("")
+	NoteIcon     = Blue("󰎚")
+	ErrorIcon    = Red("")
 )
 
 // DisplayByDate displays items grouped by date
@@ -96,7 +105,7 @@ func displayStats(items []Item) {
 	comp, inprog, pending, notes := getStats(items)
 	tasks := comp + inprog + pending
 
-	frac := Gray(color.Sprintf("[%d/%d] of tasks complete", comp, tasks))
+	frac := Gray(color.Sprintf("%d of %d tasks complete", comp, tasks))
 
 	color.Printf("  %s\n", frac)
 	color.Printf("  %s %s%s %s%s %s%s %s\n\n", Green(comp), Gray("done · "), Blue(inprog), Gray("in-progress · "), Magenta(pending), Gray("pending · "), Blue(notes), Gray("notes"))
@@ -173,15 +182,15 @@ func getIcon(item Item) string {
 	icon := ""
 	if t, ok := item.(*Task); ok {
 		if t.InProgress {
-			icon = Blue("")
+			icon = ProgressIcon
 			return icon
 		} else if t.IsComplete {
-			icon = Green("")
+			icon = CompleteIcon
 		} else {
-			icon = Gray("")
+			icon = PendingIcon
 		}
 	} else {
-		icon = Blue("󰎚")
+		icon = NoteIcon
 	}
 
 	return icon
@@ -189,26 +198,31 @@ func getIcon(item Item) string {
 
 // getStar returns star if item is starred
 func getStar(item Item) string {
-	star := ""
-
 	if item.GetBaseItem().IsStarred {
-		star = "󰓎"
-		return star
+		return StarIcon
 	}
 
-	return star
+	return ""
 }
 
 func InvalidID(id int) error {
-	return fmt.Errorf("%s %d\n", ErrInvalidID, id)
+	return fmt.Errorf("\n  %s  %s %d\n", ErrorIcon, ErrInvalidID, id)
 }
 
 func InvalidIDArgNumber() error {
-	return fmt.Errorf("%s", ErrInvalidIDArgNumber)
+	return fmt.Errorf("\n  %s  %s\n", ErrorIcon, ErrInvalidIDArgNumber)
 }
 
 func InvalidPriority() error {
-	return fmt.Errorf("%s", ErrInvalidPriority)
+	return fmt.Errorf("\n  %s  %s\n", ErrorIcon, ErrInvalidPriority)
+}
+
+func MissingID() error {
+	return fmt.Errorf("\n  %s  %s\n", ErrorIcon, ErrMissingID)
+}
+
+func MissingBoards() error {
+	return fmt.Errorf("\n  %s  %s\n", ErrorIcon, ErrMissingID)
 }
 
 // TODO determine if []int or []string
