@@ -5,14 +5,17 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"time"
 )
 
-var nextID int
+var (
+	nextID int
+)
 
-// Base struct that contains common fields
+// BaseItem is a struct that contains common fields
 type BaseItem struct {
 	ID          int      `json:"_id"`
 	Date        string   `json:"_date"`
@@ -51,17 +54,21 @@ func (n *Note) GetBaseItem() *BaseItem {
 }
 
 type Book struct {
-	items []Item
+	Items []Item
 }
 
-func (b *Book) add(item Item) {
+func (b *Book) add(item Item) error {
+	if item == nil {
+		return fmt.Errorf("Item is nil")
+	}
 
 	nextID++
 	item.GetBaseItem().ID = nextID
 	item.GetBaseItem().Date = time.Now().Format("Mon Jan 02 2006")
 	item.GetBaseItem().Timestamp = time.Now().UnixMilli()
 
-	b.items = append(b.items, item)
+	b.Items = append(b.Items, item)
+	return nil
 }
 
 func createTask(desc string, star bool, boards []string, comp bool, prog bool, prio int) *Task {
@@ -81,8 +88,11 @@ func createTask(desc string, star bool, boards []string, comp bool, prog bool, p
 
 func (b *Book) AddTask(desc string, star bool, boards []string, comp bool, prog bool, prio int) {
 	task := createTask(desc, star, boards, comp, prog, prio)
-	b.add(task)
-	fmt.Printf("Created task: %v\n", task.ID)
+	if err := b.add(task); err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(ItemCreated(task.ID, true))
 }
 
 func createNote(desc string, star bool, boards []string, prio int) *Note {
@@ -100,20 +110,50 @@ func createNote(desc string, star bool, boards []string, prio int) *Note {
 
 func (b *Book) AddNote(desc string, star bool, boards []string, prio int) {
 	note := createNote(desc, star, boards, prio)
-	b.add(note)
-	fmt.Printf("Created note: %d", note.ID)
-}
-
-func (b *Book) update(id int, modifyItem func(Item) Item) error {
-	idx := b.getIndexByID(id)
-	if idx == -1 {
-		return fmt.Errorf("Unable to find item with id %d", id)
+	if err := b.add(note); err != nil {
+		fmt.Println(err)
+		return
 	}
-	b.items[idx] = modifyItem(b.items[idx])
-	return nil
+	fmt.Println(ItemCreated(note.ID, false))
 }
 
-func (b *Book) UpdateTask(id int, modifyTask func(*Task) *Task) error {
+func (b *Book) update(id int, modifyItem func(Item) Item) {
+	idx, _ := b.GetIndexAndItemByID(id)
+	if idx == -1 {
+		return
+	}
+	b.Items[idx] = modifyItem(b.Items[idx])
+}
+
+// Update updates item
+func (b *Book) Update(id int, modifyItem func(Item) Item) {
+	taskUpdater := func(item Item) Item {
+		task, ok := item.(*Task)
+		if !ok {
+			return item
+		}
+
+		return modifyItem(task)
+	}
+
+	noteUpdater := func(item Item) Item {
+		note, ok := item.(*Note)
+		if !ok {
+			return item
+		}
+
+		return modifyItem(note)
+	}
+
+	_, item := b.GetIndexAndItemByID(id)
+	if _, ok := item.(*Task); ok {
+		b.update(id, taskUpdater)
+	}
+	b.update(id, noteUpdater)
+}
+
+// UpdateTask updates task
+func (b *Book) UpdateTask(id int, modifyTask func(*Task) *Task) {
 	taskUpdater := func(item Item) Item {
 		task, ok := item.(*Task)
 		if !ok {
@@ -123,10 +163,11 @@ func (b *Book) UpdateTask(id int, modifyTask func(*Task) *Task) error {
 		return modifyTask(task)
 	}
 
-	return b.update(id, taskUpdater)
+	b.update(id, taskUpdater)
 }
 
-func (b *Book) UpdateNote(id int, modifyNote func(*Note) *Note) error {
+// UpdateNote updates note
+func (b *Book) UpdateNote(id int, modifyNote func(*Note) *Note) {
 	noteUpdater := func(item Item) Item {
 		note, ok := item.(*Note)
 		if !ok {
@@ -136,45 +177,81 @@ func (b *Book) UpdateNote(id int, modifyNote func(*Note) *Note) error {
 		return modifyNote(note)
 	}
 
-	return b.update(id, noteUpdater)
+	b.update(id, noteUpdater)
 }
 
-func (b *Book) Delete(id int) error {
+// Delete places item in archive given ID
+func (b *Book) Delete(id int) {
 	modifyItem := func(item Item) Item {
 		item.GetBaseItem().IsArchive = true
 		return item
 	}
-	if err := b.update(id, modifyItem); err != nil {
-		return err
-	}
-	return nil
+	b.update(id, modifyItem)
 }
 
-func (b *Book) Clear(id int) error {
-	idx := b.getIndexByID(id)
-	if idx == -1 {
-		return fmt.Errorf("invalid ID")
+// Remove removes every item in archive
+func (b *Book) Remove() {
+	for i, items := range b.Items {
+		if items.GetBaseItem().IsArchive {
+			b.Items = append(b.Items[:i], b.Items[i+1:]...)
+		}
 	}
-	b.items = append(b.items[:idx], b.items[idx+1:]...)
-	return nil
 }
 
-func (b *Book) Store(fileName string) error {
-	data, err := json.MarshalIndent(b.items, "", "    ")
+// Store stores items in storage
+func (b *Book) Store() error {
+	data, err := json.MarshalIndent(b.Items, "", "    ")
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(fileName, data, 0644)
+	return os.WriteFile(getStoragePath(), data, 0644)
 }
 
-func (b *Book) Read(fileName string) error {
-	data, err := os.ReadFile(fileName)
+// getStoragePath gets the storage path for our Book
+func getStoragePath() string {
+	home, err := os.UserHomeDir()
 	if err != nil {
 		panic(err)
 	}
 
+	// Check for XDG_DATA_HOME
+	if xdgDataHome := os.Getenv("XDG_DATA_HOME"); xdgDataHome != "" {
+		storageDir := filepath.Join(xdgDataHome, "taskbook")
+		storageFile := filepath.Join(storageDir, "taskbook.json")
+		return storageFile
+	}
+
+	storageDir := filepath.Join(home, ".local", "share", "taskbook")
+	storageFile := filepath.Join(storageDir, "storage.json")
+	return storageFile
+}
+
+// func Create creates a taskbook.json if it does not exist
+func Create() {
+	storageFile := getStoragePath()
+	if _, err := os.Stat(storageFile); errors.Is(err, os.ErrNotExist) {
+		if err := os.MkdirAll(filepath.Dir(storageFile), 0700); err != nil {
+			fmt.Println(err)
+			return
+		}
+		if _, err := os.Create(storageFile); err != nil {
+			fmt.Println(err)
+			return
+		}
+
+	}
+}
+
+// Read unmarshals storageFile or creates it
+func (b *Book) Read() error {
+	storageFile := getStoragePath()
+	data, err := os.ReadFile(storageFile)
+	if err != nil {
+		Create()
+	}
+
 	if len(data) == 0 {
-		return err
+		return nil
 	}
 
 	var rawItems []json.RawMessage
@@ -182,7 +259,7 @@ func (b *Book) Read(fileName string) error {
 		return err
 	}
 
-	b.items = make([]Item, len(rawItems))
+	b.Items = make([]Item, len(rawItems))
 	for i, raw := range rawItems {
 		var base BaseItem
 		if err := json.Unmarshal(raw, &base); err != nil {
@@ -194,38 +271,41 @@ func (b *Book) Read(fileName string) error {
 			if err := json.Unmarshal(raw, &task); err != nil {
 				return err
 			}
-			b.items[i] = &task
+			b.Items[i] = &task
 		} else {
 			var note Note
 			if err := json.Unmarshal(raw, &note); err != nil {
 				return err
 			}
-			b.items[i] = &note
+			b.Items[i] = &note
 		}
 	}
 
-	if err := json.Unmarshal(data, &b.items); err != nil {
+	if err := json.Unmarshal(data, &b.Items); err != nil {
 		fmt.Printf("%v", err)
 		return err
 	}
 
+	// set nextID to max ID
 	nextID = b.getMaxID()
 
 	return nil
 
 }
 
-func (b *Book) getIndexByID(id int) int {
-	for i, item := range b.items {
+// GetIndexAndItemByID gets index, item given ID
+func (b *Book) GetIndexAndItemByID(id int) (int, Item) {
+	for i, item := range b.Items {
 		if item.GetBaseItem().ID == id {
-			return i
+			return i, item
 		}
 	}
-	return -1
+	return -1, nil
 }
 
+// getMaxID gets the max ID of b
 func (b *Book) getMaxID() int {
-	it := b.items
+	it := b.Items
 	if len(it) > 0 {
 		return it[len(it)-1].GetBaseItem().ID
 	} else {
@@ -233,9 +313,10 @@ func (b *Book) getMaxID() int {
 	}
 }
 
+// GetAllID gets every ID. If at, then every id will have @ as a prefix.
 func (b *Book) GetAllID(at bool) []string {
 	var ids []string
-	for _, item := range b.items {
+	for _, item := range b.Items {
 		id := strconv.Itoa(item.GetBaseItem().ID)
 		if at {
 			ids = append(ids, "@"+id)
@@ -246,24 +327,17 @@ func (b *Book) GetAllID(at bool) []string {
 	return ids
 }
 
-func (b *Book) GetAllBoard() []string {
+// GetAllBoard gets every board. If a, includes boards in the archive
+func (b *Book) GetAllBoard(a bool) []string {
 	var boards []string
-	for _, item := range b.items {
+	for _, item := range b.Items {
 		if item.GetBaseItem().Boards[0] != "My Board" {
-			boards = append(boards, item.GetBaseItem().Boards...)
+			if a || !item.GetBaseItem().IsArchive {
+				boards = append(boards, item.GetBaseItem().Boards...)
+			}
 		}
 	}
 	return boards
-}
-
-// func Create creates a taskbook.json if it does not exist
-func Create() {
-	if _, err := os.Stat("/home/araaha/taskbook.json"); errors.Is(err, os.ErrNotExist) {
-		_, err := os.Create("/home/araaha/taskbook.json")
-		if err != nil {
-			panic(err)
-		}
-	}
 }
 
 // groupByBoard groups items by board
@@ -271,7 +345,8 @@ func (b *Book) groupByBoard() (map[string][]Item, []string) {
 	itemsByBoard := make(map[string][]Item)
 	sortedBoard := make([]string, len(itemsByBoard))
 
-	for _, item := range b.items {
+	// group items by board
+	for _, item := range b.Items {
 		bi := item.GetBaseItem()
 		if !bi.IsArchive {
 			for _, board := range bi.Boards {
@@ -294,14 +369,14 @@ func (b *Book) groupByBoard() (map[string][]Item, []string) {
 	return itemsByBoard, sortedBoard
 }
 
-// groupByDate groups items by date
+// groupByDate groups archived|non-archived items by date
 func (b *Book) groupByDate(a bool) (map[string][]Item, []string) {
 	itemsByDate := make(map[string][]Item)
 	sortedDates := make([]string, len(itemsByDate))
 
-	for _, item := range b.items {
+	for _, item := range b.Items {
 		bi := item.GetBaseItem()
-		if a || !bi.IsArchive {
+		if (a && bi.IsArchive) || (!a && !bi.IsArchive) {
 			itemsByDate[bi.Date] = append(itemsByDate[bi.Date], item)
 		}
 	}
