@@ -1,12 +1,9 @@
-/*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
 	"fmt"
+	tb "github.com/araaha/tb.go/taskbook"
 	"github.com/spf13/cobra"
-	"os"
 	"strings"
 )
 
@@ -14,61 +11,57 @@ import (
 var noteCmd = &cobra.Command{
 	Use:   "note",
 	Short: "Create note",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: note,
+	Run: func(_ *cobra.Command, args []string) {
+		note(args)
+	},
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return taskBook.GetAllBoard(), cobra.ShellCompDirectiveNoFileComp
+		return taskBook.GetAllBoard(true), cobra.ShellCompDirectiveNoFileComp
 	},
 }
 
-func note(cmd *cobra.Command, args []string) {
-	var b []string
-	var t []string
+// note adds a Note
+func note(args []string) {
+	var boards []string
+	var notes []string
 	level := map[string]int{"low": 1, "medium": 2, "high": 3}
 
 	if len(args) == 0 {
-		fmt.Printf("No description was given as input\n")
-		os.Exit(1)
+		fmt.Println(tb.MissingDesc())
+		return
 	}
 
 	for _, arg := range args {
 		if strings.HasPrefix(arg, "@") {
-			b = append(b, arg)
+			if len(arg) == 1 {
+				fmt.Println(tb.MissingBoards())
+				return
+			}
+			boards = append(boards, arg)
 		} else {
-			t = append(t, arg)
+			notes = append(notes, arg)
 		}
 	}
 
-	if len(b) == 0 {
-		b = append(b, "My Board")
+	if len(notes) == 0 || len(notes) == 1 && len(notes[0]) == 0 {
+		fmt.Println(tb.MissingDesc())
+		return
 	}
 
-	desc := strings.Join(t, " ")
+	if len(boards) == 0 {
+		boards = append(boards, "My Board")
+	}
 
-	taskBook.AddNote(desc, star, b, level[prio])
+	desc := strings.Join(notes, " ")
+
+	taskBook.AddNote(desc, str, boards, level[prio])
 }
 
 func init() {
 	rootCmd.AddCommand(noteCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// noteCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// noteCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	noteCmd.Flags().StringVarP(&prio, "priority", "p", "low", "Set priorty for note")
-	noteCmd.RegisterFlagCompletionFunc("priority", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	_ = noteCmd.RegisterFlagCompletionFunc("priority", func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 		return []string{"low", "medium", "high"}, cobra.ShellCompDirectiveDefault
 	})
 
-	noteCmd.Flags().BoolVarP(&star, "star", "s", false, "Star note")
+	noteCmd.Flags().BoolVarP(&str, "star", "s", false, "Star note")
 }
