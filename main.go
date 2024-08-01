@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/araaha/tb/cmd"
+	"github.com/araaha/tb.go/cmd"
 )
 
 func main() {
