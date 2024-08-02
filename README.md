@@ -24,6 +24,7 @@ https://github.com/user-attachments/assets/1588a437-2680-42b0-ab61-9ddbfaf13bca
     * [Shell Completion](#Shell-completion)
     * [Config](#Config)
         * [Example](#Example)
+    * [Commmands](#Commands)
 * [Comparison](#Comparison)
 * [Thanks to](#Thanks-to)
 
@@ -109,6 +110,43 @@ cyan = "#8ec07c"
 ```
 
 You can specify the colors in hex format.
+
+### Commands
+```sh
+tb help
+
+A Taskbook
+
+Usage:
+  tb [flags]
+  tb [command]
+
+Available Commands:
+  archive     Display archived items
+  begin       Begin/pause task
+  check       Check/uncheck task
+  clear       Delete all checked items
+  completion  Generate the autocompletion script for the specified shell
+  delete      Delete item
+  edit        Edit item description
+  help        Help about any command
+  list        List items by board
+  move        Move item between boards
+  note        Create note
+  priority    Update priority of task
+  restore     Restore items from archive
+  star        Star/unstar item
+  task        Create task
+  timeline    Display timeline view
+
+Flags:
+      --config string   config file (default is $XDG_CONFIG_HOME/taskbook/taskbook.toml)
+  -h, --help            help for tb
+  -v, --version         Display current version
+
+Use "tb [command] --help" for more information about a command.
+```
+
 
 ## Comparison
 Compared to [taskbook](https://github.com/klaudiosinani/taskbook):
