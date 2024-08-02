@@ -17,8 +17,9 @@ var (
 
 // taskCmd represents the task command
 var taskCmd = &cobra.Command{
-	Use:   "task",
-	Short: "Create task",
+	Use:     "task",
+	Short:   "Create task",
+	Example: "tb task @homework finish assignment",
 	Run: func(_ *cobra.Command, args []string) {
 		task(args)
 	},

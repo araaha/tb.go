@@ -85,17 +85,16 @@ func initConfig() {
 		viper.SetConfigName("taskbook")
 		viper.SetConfigType("toml")
 
-		if err := viper.ReadInConfig(); err != nil {
-			if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-				if err := viper.SafeWriteConfig(); err != nil {
-					fmt.Println(err)
-					return
-				}
-			} else {
+	}
+	if err := viper.ReadInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			if err := viper.SafeWriteConfig(); err != nil {
 				fmt.Println(err)
 				return
 			}
+		} else {
+			fmt.Println(err)
+			return
 		}
-
 	}
 }

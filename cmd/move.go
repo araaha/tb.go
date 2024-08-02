@@ -11,9 +11,10 @@ import (
 
 // moveCmd represents the move command
 var moveCmd = &cobra.Command{
-	Use:   "move",
-	Short: "Move item between boards",
-	Run:   move,
+	Use:     "move",
+	Short:   "Move item between boards",
+	Run:     move,
+	Example: "tb move @7 cooking recipes",
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return taskBook.GetAllID(true), cobra.ShellCompDirectiveNoFileComp
 	},

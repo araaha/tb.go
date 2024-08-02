@@ -11,8 +11,9 @@ import (
 
 // editCmd represents the edit command
 var editCmd = &cobra.Command{
-	Use:   "edit",
-	Short: "Edit item description",
+	Use:     "edit",
+	Short:   "Edit item description",
+	Example: "tb edit @19 Approve pull request",
 	Run: func(_ *cobra.Command, args []string) {
 		edit(args)
 	},

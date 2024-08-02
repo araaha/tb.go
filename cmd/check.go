@@ -10,8 +10,9 @@ import (
 
 // checkCmd represents the check command
 var checkCmd = &cobra.Command{
-	Use:   "check",
-	Short: "Check/uncheck task",
+	Use:     "check",
+	Short:   "Check/uncheck task",
+	Example: "tb check 7 8 9",
 	Run: func(_ *cobra.Command, args []string) {
 		check(args)
 	},

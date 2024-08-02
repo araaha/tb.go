@@ -10,9 +10,10 @@ import (
 
 // starCmd represents the star command
 var starCmd = &cobra.Command{
-	Use:   "star",
-	Short: "Star/unstar item",
-	Run:   star,
+	Use:     "star",
+	Short:   "Star/unstar item",
+	Example: "tb star 18 19",
+	Run:     star,
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return taskBook.GetAllID(false), cobra.ShellCompDirectiveNoFileComp
 	},

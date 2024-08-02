@@ -9,8 +9,9 @@ import (
 
 // noteCmd represents the note command
 var noteCmd = &cobra.Command{
-	Use:   "note",
-	Short: "Create note",
+	Use:     "note",
+	Short:   "Create note",
+	Example: "tb note 'nvim > vim'",
 	Run: func(_ *cobra.Command, args []string) {
 		note(args)
 	},

@@ -10,8 +10,9 @@ import (
 
 // beginCmd represents the begin command
 var beginCmd = &cobra.Command{
-	Use:   "begin",
-	Short: "Begin/pause task",
+	Use:     "begin",
+	Short:   "Begin/pause task",
+	Example: "tb begin 6 8",
 	Run: func(_ *cobra.Command, args []string) {
 		begin(args)
 	},

@@ -10,8 +10,9 @@ import (
 
 // deleteCmd represents the delete command
 var deleteCmd = &cobra.Command{
-	Use:   "delete",
-	Short: "Delete item",
+	Use:     "delete",
+	Short:   "Delete item",
+	Example: "tb delete 1 9",
 	Run: func(_ *cobra.Command, args []string) {
 		delete(args)
 	},

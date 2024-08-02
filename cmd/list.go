@@ -6,8 +6,9 @@ import (
 
 // listCmd represents the list command
 var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List items by board",
+	Use:     "list",
+	Short:   "List items by board",
+	Example: "tb list @recipes @netflix",
 	Run: func(_ *cobra.Command, args []string) {
 		list(args)
 	},

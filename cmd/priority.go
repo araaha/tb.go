@@ -11,8 +11,9 @@ import (
 
 // priorityCmd represents the priority command
 var priorityCmd = &cobra.Command{
-	Use:   "priority",
-	Short: "Update priority of task",
+	Use:     "priority",
+	Short:   "Update priority of task",
+	Example: "tb priority @2 3",
 	Run: func(_ *cobra.Command, args []string) {
 		priority(args)
 	},

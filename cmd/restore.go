@@ -10,9 +10,10 @@ import (
 
 // restoreCmd represents the restore command
 var restoreCmd = &cobra.Command{
-	Use:   "restore",
-	Short: "Restore items from archive",
-	Run:   restore,
+	Use:     "restore",
+	Short:   "Restore items from archive",
+	Run:     restore,
+	Example: "tb restore 4 5",
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return taskBook.GetAllID(false), cobra.ShellCompDirectiveNoFileComp
 	},
