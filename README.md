@@ -14,18 +14,18 @@
 * Tab-complete arguments
 
 ## Table of Contents
-* [Installation](##Installation)
-    * [Requirements](###Requirements)
-    * [AUR](###AUR)
-    * [Git](###Git)
-    * [Binary releases](<###Binary releases>)
-* [Usage](##Usage)
-    * [Quickstart](###Quickstart)
-    * [Shell Completion](<###Shell completion>)
-    * [Config](###Config)
-        * [Example](####Example)
-* [Comparison](##Comparison)
-* [Thanks to](<##Thanks to>)
+* [Installation](#Installation)
+    * [Requirements](#Requirements)
+    * [AUR](#AUR)
+    * [Git](#Git)
+    * [Binary releases](#Binary-releases)
+* [Usage](#Usage)
+    * [Quickstart](#Quickstart)
+    * [Shell Completion](#Shell-completion)
+    * [Config](#Config)
+        * [Example](#Example)
+* [Comparison](#Comparison)
+* [Thanks to](#Thanks-to)
 
 ## Installation
 ### Requirements
