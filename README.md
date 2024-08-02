@@ -1,7 +1,7 @@
 # Taskbook.go
 **Tasks, boards & notes for the terminal** 🚀🚀🚀
 
-//TODO add vid
+https://github.com/user-attachments/assets/1588a437-2680-42b0-ab61-9ddbfaf13bca
 
 ## Overview
 
