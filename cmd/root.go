@@ -13,6 +13,7 @@ import (
 var (
 	ver      bool
 	Version  string
+	Revision string
 	cfgFile  string
 	taskBook tb.Book
 )
@@ -29,7 +30,7 @@ var rootCmd = &cobra.Command{
 	},
 	Run: func(_ *cobra.Command, _ []string) {
 		if ver {
-			fmt.Println(Version)
+			fmt.Printf("%s (%s)\n", Version, Revision)
 			return
 		}
 		taskBook.DisplayByBoard()

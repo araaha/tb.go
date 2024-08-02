@@ -1,7 +1,7 @@
 BINARY_NAME := tb
 BIN_DIR := /usr/local/bin
 SRCS := $(shell git ls-files '*.go')
-LDFLAGS := "-X 'github.com/araaha/tb.go/cmd.Version=v1.0.0'"
+LDFLAGS := "-X github.com/araaha/tb.go/cmd.Version=v1.0.0 -X github.com/araaha/tb.go/cmd.Revision=$(shell git rev-parse --verify --short HEAD)"
 
 all: build
 
