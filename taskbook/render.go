@@ -197,7 +197,7 @@ func getAge(item Item) (age float64) {
 // getStats returns the stats of []Item
 func getStats(items []Item) (comp int, inprog int, pending int, notes int) {
 	for _, item := range items {
-		if t, ok := item.(*Task); ok {
+		if t, ok := item.(*Task); ok && !t.IsArchive {
 			if t.IsComplete {
 				comp++
 			} else if t.InProgress {
@@ -205,7 +205,7 @@ func getStats(items []Item) (comp int, inprog int, pending int, notes int) {
 			} else {
 				pending++
 			}
-		} else {
+		} else if !item.GetBaseItem().IsArchive {
 			notes++
 		}
 	}
