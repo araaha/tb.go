@@ -191,11 +191,16 @@ func (b *Book) Delete(id int) {
 
 // Remove removes every item in archive
 func (b *Book) Remove() {
-	for i, items := range b.Items {
-		if items.GetBaseItem().IsArchive {
-			b.Items = append(b.Items[:i], b.Items[i+1:]...)
+
+	var updatedItems []Item
+
+	for _, item := range b.Items {
+		if !item.GetBaseItem().IsArchive {
+			updatedItems = append(updatedItems, item)
 		}
 	}
+
+	b.Items = updatedItems
 }
 
 // Store stores items in storage
