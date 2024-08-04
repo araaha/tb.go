@@ -11,11 +11,19 @@ import (
 )
 
 var (
-	ver      bool
-	Version  string
+	// Version represents the version of tb.go
+	Version string
+	// Revision represents the revision of tb.go
 	Revision string
-	cfgFile  string
+)
+
+var (
+	// taskBook represents the taskbook
 	taskBook tb.Book
+	// cfgFile represents the config file
+	cfgFile string
+	// ver is the version information
+	ver bool
 )
 
 // rootCmd displays board or version. It reads the data and stores it.
@@ -69,6 +77,9 @@ func initConfig() {
 	} else {
 		// Find home directory.
 		home, err := os.UserHomeDir()
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+		}
 		cobra.CheckErr(err)
 
 		var cfgPath string
@@ -89,12 +100,6 @@ func initConfig() {
 	}
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			if err := viper.SafeWriteConfig(); err != nil {
-				fmt.Println(err)
-				return
-			}
-		} else {
-			fmt.Println(err)
 			return
 		}
 	}
