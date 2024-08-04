@@ -36,7 +36,7 @@ var rootCmd = &cobra.Command{
 			os.Exit(1)
 		}
 	},
-	Run: func(_ *cobra.Command, _ []string) {
+	Run: func(cmd *cobra.Command, _ []string) {
 		if ver {
 			fmt.Printf("%s (%s)\n", Version, Revision)
 			return
@@ -44,6 +44,9 @@ var rootCmd = &cobra.Command{
 		taskBook.DisplayByBoard()
 	},
 	PersistentPostRun: func(cmd *cobra.Command, args []string) {
+		if cmd.Name() == "help" || cmd.Name() == "tb" || cmd.Parent().Name() == "completion" || cmd.Name() == "completion" {
+			return
+		}
 		if err := taskBook.Store(); err != nil {
 			fmt.Println(err)
 			os.Exit(1)

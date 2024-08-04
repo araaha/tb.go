@@ -37,7 +37,63 @@ func TestBook_Remove(t *testing.T) {
 		name   string
 		fields fields
 	}{
-		// TODO: Add test cases.
+		{
+			name: "remove one",
+			fields: fields{
+				Items: []Item{
+					&Task{
+						BaseItem: BaseItem{
+							ID:          1,
+							Date:        "",
+							Timestamp:   0,
+							Description: "",
+							IsStarred:   false,
+							Boards:      []string{},
+							IsTask:      false,
+							IsArchive:   true,
+							Priority:    0,
+						},
+						IsComplete: false,
+						InProgress: false,
+					},
+				},
+			},
+		},
+		{
+			name: "remove two",
+			fields: fields{
+				Items: []Item{
+					&Note{
+						BaseItem: BaseItem{
+							ID:          1,
+							Date:        "",
+							Timestamp:   0,
+							Description: "",
+							IsStarred:   false,
+							Boards:      []string{},
+							IsTask:      false,
+							IsArchive:   true,
+							Priority:    0,
+						},
+					},
+					&Task{
+						BaseItem: BaseItem{
+							ID:          2,
+							Date:        "",
+							Timestamp:   0,
+							Description: "",
+							IsStarred:   false,
+							Boards:      []string{},
+							IsTask:      false,
+							IsArchive:   true,
+							Priority:    0,
+						},
+						IsComplete: false,
+						InProgress: false,
+					},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

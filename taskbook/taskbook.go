@@ -203,12 +203,17 @@ func (b *Book) Remove() {
 	b.Items = updatedItems
 }
 
-// Store stores items in storage
+// Store stores items in storage or creates a file if necessary
 func (b *Book) Store() error {
 	data, err := json.MarshalIndent(b.Items, "", "    ")
 	if err != nil {
 		return err
 	}
+
+	// Create storage file if it does not exist
+	Create()
+
+	// Write to storage file
 	return os.WriteFile(getStoragePath(), data, 0644)
 }
 
@@ -247,12 +252,12 @@ func Create() {
 	}
 }
 
-// Read unmarshals storageFile or creates it
+// Read unmarshals storageFile
 func (b *Book) Read() error {
 	storageFile := getStoragePath()
 	data, err := os.ReadFile(storageFile)
 	if err != nil {
-		Create()
+		return nil
 	}
 
 	if len(data) == 0 {
