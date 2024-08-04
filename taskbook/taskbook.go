@@ -211,7 +211,9 @@ func (b *Book) Store() error {
 	}
 
 	// Create storage file if it does not exist
-	Create()
+	if err := Create(); err != nil {
+		return err
+	}
 
 	// Write to storage file
 	return os.WriteFile(getStoragePath(), data, 0644)
@@ -219,6 +221,10 @@ func (b *Book) Store() error {
 
 // getStoragePath gets the storage path for our Book
 func getStoragePath() string {
+	if os.Getenv("TEST_MODE") == "true" {
+		return "test_storage.json"
+	}
+
 	home, err := os.UserHomeDir()
 	if err != nil {
 		panic(err)
@@ -237,19 +243,19 @@ func getStoragePath() string {
 }
 
 // func Create creates a taskbook.json if it does not exist
-func Create() {
+func Create() error {
 	storageFile := getStoragePath()
 	if _, err := os.Stat(storageFile); errors.Is(err, os.ErrNotExist) {
 		if err := os.MkdirAll(filepath.Dir(storageFile), 0700); err != nil {
-			fmt.Println(err)
-			return
+			return err
 		}
 		if _, err := os.Create(storageFile); err != nil {
-			fmt.Println(err)
-			return
+			return err
 		}
 
 	}
+
+	return nil
 }
 
 // Read unmarshals storageFile
@@ -323,21 +329,32 @@ func (b *Book) getMaxID() int {
 	}
 }
 
-// GetAllID gets every ID. If at, then every id will have @ as a prefix.
-func (b *Book) GetAllID(at bool) []string {
+// GetAllID returns every ID. If 'at' is true, every ID will have '@' as a prefix.
+// If 'a' is true, IDs in the archive are included.
+func (b *Book) GetAllID(at bool, a bool) []string {
 	var ids []string
+
 	for _, item := range b.Items {
 		id := strconv.Itoa(item.GetBaseItem().ID)
-		if at {
-			ids = append(ids, "@"+id)
-		} else {
-			ids = append(ids, id)
+		isArchived := item.GetBaseItem().IsArchive
+
+		// Determine if the current item should be included based on 'a'
+		if !a && isArchived {
+			continue
 		}
+
+		// Determine if the ID should be prefixed with '@'
+		if at {
+			id = "@" + id
+		}
+
+		ids = append(ids, id)
 	}
+
 	return ids
 }
 
-// GetAllBoard gets every board. If a, includes boards in the archive
+// GetAllBoard gets every board. If 'a', includes boards in the archive
 func (b *Book) GetAllBoard(a bool) []string {
 	var boards []string
 	for _, item := range b.Items {

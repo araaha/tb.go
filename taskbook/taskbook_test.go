@@ -1,6 +1,7 @@
 package tb
 
 import (
+	"os"
 	"reflect"
 	"testing"
 )
@@ -9,22 +10,41 @@ func TestBook_Delete(t *testing.T) {
 	type fields struct {
 		Items []Item
 	}
-	type args struct {
-		id int
-	}
 	tests := []struct {
 		name   string
 		fields fields
-		args   args
+		id     int
 	}{
-		// TODO: Add test cases.
+		{
+			name: "delete nothing",
+			fields: fields{
+				Items: []Item{
+					&Task{
+						BaseItem: BaseItem{
+							ID:          1,
+							Date:        "",
+							Timestamp:   0,
+							Description: "",
+							IsStarred:   false,
+							Boards:      []string{},
+							IsTask:      false,
+							IsArchive:   false,
+							Priority:    0,
+						},
+						IsComplete: false,
+						InProgress: false,
+					},
+				},
+			},
+			id: 1,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			b := &Book{
 				Items: tt.fields.Items,
 			}
-			b.Delete(tt.args.id)
+			b.Delete(tt.id)
 		})
 	}
 }
@@ -106,6 +126,9 @@ func TestBook_Remove(t *testing.T) {
 }
 
 func TestBook_Store(t *testing.T) {
+	os.Setenv("TEST_MODE", "true") // Enable test mode
+	defer os.Unsetenv("TEST_MODE") // Clean up environment variable
+
 	type fields struct {
 		Items []Item
 	}
@@ -114,7 +137,67 @@ func TestBook_Store(t *testing.T) {
 		fields  fields
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			name: "store 1 item",
+			fields: fields{
+				Items: []Item{
+					&Task{
+						BaseItem: BaseItem{
+							ID:          1,
+							Date:        "",
+							Timestamp:   0,
+							Description: "",
+							IsStarred:   false,
+							Boards:      []string{},
+							IsTask:      false,
+							IsArchive:   false,
+							Priority:    0,
+						},
+						IsComplete: false,
+						InProgress: false,
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "store 2 item",
+			fields: fields{
+				Items: []Item{
+					&Task{
+						BaseItem: BaseItem{
+							ID:          1,
+							Date:        "",
+							Timestamp:   0,
+							Description: "",
+							IsStarred:   false,
+							Boards:      []string{},
+							IsTask:      false,
+							IsArchive:   false,
+							Priority:    0,
+						},
+						IsComplete: false,
+						InProgress: false,
+					},
+					&Task{
+						BaseItem: BaseItem{
+							ID:          2,
+							Date:        "",
+							Timestamp:   3,
+							Description: "",
+							IsStarred:   false,
+							Boards:      []string{},
+							IsTask:      false,
+							IsArchive:   false,
+							Priority:    0,
+						},
+						IsComplete: false,
+						InProgress: false,
+					},
+				},
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -130,11 +213,17 @@ func TestBook_Store(t *testing.T) {
 
 // cross platform
 func Test_getStoragePath(t *testing.T) {
+	os.Setenv("TEST_MODE", "true") // Enable test mode
+	defer os.Unsetenv("TEST_MODE") // Clean up environment variable
+
 	tests := []struct {
 		name string
 		want string
 	}{
-		// TODO: Add test cases.
+		{
+			name: "TEST_MODE",
+			want: "test_storage.json",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -147,13 +236,19 @@ func Test_getStoragePath(t *testing.T) {
 
 func TestCreate(t *testing.T) {
 	tests := []struct {
-		name string
+		name    string
+		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			name:    "TEST_MODE",
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			Create()
+			if err := Create(); (err != nil) != tt.wantErr {
+				t.Errorf("Book.Store() error = %v, wantErr %v", err, tt.wantErr)
+			}
 		})
 	}
 }
@@ -241,10 +336,11 @@ func TestBook_GetAllID(t *testing.T) {
 		name   string
 		fields fields
 		at     bool
+		a      bool
 		want   []string
 	}{
 		{
-			name: "no at",
+			name: "no @",
 			fields: fields{
 				[]Item{
 					&Task{
@@ -268,7 +364,7 @@ func TestBook_GetAllID(t *testing.T) {
 			want: []string{"1"},
 		},
 		{
-			name: "at",
+			name: "@",
 			fields: fields{
 				[]Item{
 					&Task{
@@ -292,7 +388,7 @@ func TestBook_GetAllID(t *testing.T) {
 			want: []string{"@1"},
 		},
 		{
-			name: "multiple at and no at",
+			name: "multiple Items, no @",
 			fields: fields{
 				[]Item{
 					&Task{
@@ -329,7 +425,7 @@ func TestBook_GetAllID(t *testing.T) {
 			want: []string{"1", "2"},
 		},
 		{
-			name: "multiple at and no at",
+			name: "multiple Items, yes @",
 			fields: fields{
 				[]Item{
 					&Task{
@@ -365,13 +461,88 @@ func TestBook_GetAllID(t *testing.T) {
 			at:   true,
 			want: []string{"@1", "@2"},
 		},
+		{
+			name: "no archive",
+			fields: fields{
+				[]Item{
+					&Task{
+						BaseItem: BaseItem{
+							ID:          1,
+							Date:        "",
+							Timestamp:   0,
+							Description: "",
+							IsStarred:   false,
+							Boards:      []string{},
+							IsTask:      false,
+							IsArchive:   true,
+							Priority:    0,
+						},
+						IsComplete: false,
+						InProgress: false,
+					},
+				},
+			},
+			a:    false,
+			at:   false,
+			want: nil,
+		},
+		{
+			name: "yes archive",
+			fields: fields{
+				[]Item{
+					&Task{
+						BaseItem: BaseItem{
+							ID:          1,
+							Date:        "",
+							Timestamp:   0,
+							Description: "",
+							IsStarred:   false,
+							Boards:      []string{},
+							IsTask:      false,
+							IsArchive:   true,
+							Priority:    0,
+						},
+						IsComplete: false,
+						InProgress: false,
+					},
+				},
+			},
+			at:   false,
+			a:    true,
+			want: []string{"1"},
+		},
+		{
+			name: "yes archive, yes @",
+			fields: fields{
+				[]Item{
+					&Task{
+						BaseItem: BaseItem{
+							ID:          1,
+							Date:        "",
+							Timestamp:   0,
+							Description: "",
+							IsStarred:   false,
+							Boards:      []string{},
+							IsTask:      false,
+							IsArchive:   true,
+							Priority:    0,
+						},
+						IsComplete: false,
+						InProgress: false,
+					},
+				},
+			},
+			at:   true,
+			a:    true,
+			want: []string{"@1"},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			b := &Book{
 				Items: tt.fields.Items,
 			}
-			if got := b.GetAllID(tt.at); !reflect.DeepEqual(got, tt.want) {
+			if got := b.GetAllID(tt.at, tt.a); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Book.GetAllID() = %v, want %v", got, tt.want)
 			}
 		})
