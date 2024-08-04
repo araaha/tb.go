@@ -17,7 +17,7 @@ var beginCmd = &cobra.Command{
 		begin(args)
 	},
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return taskBook.GetAllID(false), cobra.ShellCompDirectiveNoFileComp
+		return taskBook.GetAllID(false, false), cobra.ShellCompDirectiveNoFileComp
 	},
 }
 

@@ -44,6 +44,7 @@ var rootCmd = &cobra.Command{
 		taskBook.DisplayByBoard()
 	},
 	PersistentPostRun: func(cmd *cobra.Command, args []string) {
+		// If cmd is any of these, don't create storage file
 		if cmd.Name() == "help" || cmd.Name() == "tb" || cmd.Parent().Name() == "completion" || cmd.Name() == "completion" {
 			return
 		}

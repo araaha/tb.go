@@ -15,7 +15,7 @@ var starCmd = &cobra.Command{
 	Example: "tb star 18 19",
 	Run:     star,
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return taskBook.GetAllID(false), cobra.ShellCompDirectiveNoFileComp
+		return taskBook.GetAllID(false, false), cobra.ShellCompDirectiveNoFileComp
 	},
 }
 

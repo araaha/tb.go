@@ -18,7 +18,7 @@ var priorityCmd = &cobra.Command{
 		priority(args)
 	},
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return taskBook.GetAllID(true), cobra.ShellCompDirectiveNoFileComp
+		return taskBook.GetAllID(true, false), cobra.ShellCompDirectiveNoFileComp
 	},
 }
 

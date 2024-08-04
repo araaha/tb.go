@@ -16,7 +16,7 @@ var moveCmd = &cobra.Command{
 	Run:     move,
 	Example: "tb move @7 cooking recipes",
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return taskBook.GetAllID(true), cobra.ShellCompDirectiveNoFileComp
+		return taskBook.GetAllID(true, false), cobra.ShellCompDirectiveNoFileComp
 	},
 }
 

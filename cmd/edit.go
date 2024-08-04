@@ -18,7 +18,7 @@ var editCmd = &cobra.Command{
 		edit(args)
 	},
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return taskBook.GetAllID(true), cobra.ShellCompDirectiveNoFileComp
+		return taskBook.GetAllID(true, false), cobra.ShellCompDirectiveNoFileComp
 	},
 }
 
@@ -32,6 +32,7 @@ func edit(args []string) {
 	case l == 1:
 		if strings.HasPrefix(args[0], "@") {
 			fmt.Println(tb.MissingDesc())
+			return
 		}
 		fmt.Println(tb.MissingID())
 		return

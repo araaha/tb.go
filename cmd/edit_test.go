@@ -31,6 +31,11 @@ func Test_edit(t *testing.T) {
 			args:     []string{"@10", "awesome"},
 			expected: tb.InvalidID("10").Error(),
 		},
+		{
+			name:     "no desc",
+			args:     []string{"@1", ""},
+			expected: tb.MissingDesc().Error(),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
