@@ -330,7 +330,7 @@ func (b *Book) getMaxID() int {
 }
 
 // GetAllID returns every ID. If 'at' is true, every ID will have '@' as a prefix.
-// If 'a' is true, IDs in the archive are included.
+// If 'a' is true, IDs consist of archived ones.
 func (b *Book) GetAllID(at bool, a bool) []string {
 	var ids []string
 
@@ -339,6 +339,9 @@ func (b *Book) GetAllID(at bool, a bool) []string {
 		isArchived := item.GetBaseItem().IsArchive
 
 		// Determine if the current item should be included based on 'a'
+		if a && !isArchived {
+			continue
+		}
 		if !a && isArchived {
 			continue
 		}
