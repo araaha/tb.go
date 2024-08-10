@@ -14,7 +14,7 @@ var restoreCmd = &cobra.Command{
 	Short:   "Restore items from archive",
 	Run:     restore,
 	Example: "tb restore 4 5",
-	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	ValidArgsFunction: func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 		return taskBook.GetAllID(false, true), cobra.ShellCompDirectiveNoFileComp
 	},
 }

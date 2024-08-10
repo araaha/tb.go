@@ -15,7 +15,7 @@ var noteCmd = &cobra.Command{
 	Run: func(_ *cobra.Command, args []string) {
 		note(args)
 	},
-	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	ValidArgsFunction: func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 		return taskBook.GetAllBoard(true), cobra.ShellCompDirectiveNoFileComp
 	},
 }
